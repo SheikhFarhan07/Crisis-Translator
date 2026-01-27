@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Upload, Camera, Globe, AlertCircle, Heart, Loader2, CheckCircle } from 'lucide-react';
 
-// ⚠️ REPLACE WITH YOUR GEMINI API KEY
-const GEMINI_API_KEY = "AIzaSyCwVOwXeKZtD7ASl-UmUpOi9-s2BVxCAhU";
+const GEMINI_API_KEY = "";
 
 function App() {
   const [image, setImage] = useState(null);
@@ -147,7 +146,7 @@ Analyze for: handwritten signs, medical forms, emergency messages, injury descri
           <p className="text-sm text-gray-500 mt-2">Powered by Google Gemini</p>
         </div>
 
-        {GEMINI_API_KEY === "AIzaSyCwVOwXeKZtD7ASl-UmUpOi9-s2BVxCAhU" && (
+        {GEMINI_API_KEY === "" && (
           <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-6 flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
             <div>
