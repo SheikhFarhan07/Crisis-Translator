@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Upload, Camera, Globe, AlertCircle, Heart, Loader2, CheckCircle } from 'lucide-react';
 
-const GEMINI_API_KEY = "";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 function App() {
   const [image, setImage] = useState(null);
