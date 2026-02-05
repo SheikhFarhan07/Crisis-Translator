@@ -1,4 +1,3 @@
-```markdown
 # Crisis Response Translator
 
 Breaking language barriers in disaster zones through AI-powered translation.
