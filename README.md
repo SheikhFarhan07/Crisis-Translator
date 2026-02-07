@@ -14,14 +14,14 @@ During disasters and humanitarian crises, language barriers prevent effective co
 
 This application uses computer vision to:
 - Extract text from images, including handwritten content
-- Translate across 10+ languages with medical terminology accuracy
+- Translate across 35+ languages with medical terminology accuracy
 - Automatically assess urgency levels based on context and keywords
 - Identify critical medical terms (insulin, bleeding, allergic, trapped, etc.)
 
 ## Features
 
 - **AI Analysis**: Processes images containing text, handwriting, or medical information
-- **Real time Translation**: Supports various languages such as English, Italian, Arabic, Chinese, Hindi, Portuguese etc.
+- **Real-time Translation**: Supports various languages such as English, Italian, Arabic, Chinese, Hindi, Portuguese, etc.
 - **Urgency Detection**: Automatically classifies situations as low, medium, high, or critical based on content analysis
 - **Medical Keyword Extraction**: Flags important medical terms that require immediate attention
 - **Responsive Design**: Works across desktop and mobile devices for field use
@@ -118,7 +118,7 @@ crisis-translator/
 The application integrates with Google's Gemini API using a RESTful approach. The API call flow:
 
 1. Image is converted to base64 format in the browser
-2. Structured prompt is created with translation requirements
+2. A structured prompt is created with translation requirements
 3. POST request sent to Gemini API endpoint with image data
 4. Response parsed and displayed to user
 
@@ -170,7 +170,7 @@ Contributions are welcome. If you'd like to improve this project:
 ## Acknowledgments
 
 - Built with Gemini API
-- Inspired by real world challenges faced during humanitarian crises
+- Inspired by real-world challenges faced during humanitarian crises
 - UI components styled with Tailwind CSS
 
 ## Contact
