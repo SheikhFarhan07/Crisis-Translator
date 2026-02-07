@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Upload, Camera, Globe, AlertCircle, Heart, Loader2, CheckCircle, Copy, Check, ChevronDown, ChevronUp, MapPin, Send } from 'lucide-react';
+import { Upload, Camera, Globe, AlertCircle, Heart, Loader2, CheckCircle, Copy, Check, ChevronDown, ChevronUp, MapPin, Send, Sliders, RotateCcw } from 'lucide-react';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 function App() {
   const [image, setImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [targetLang, setTargetLang] = useState('en');
@@ -12,6 +13,10 @@ function App() {
   const [isPredictionsExpanded, setIsPredictionsExpanded] = useState(false);
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
+  const [showEnhanceControls, setShowEnhanceControls] = useState(false);
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [sharpness, setSharpness] = useState(100);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -82,12 +87,93 @@ function App() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
+        setOriginalImage(event.target.result);
         setImage(event.target.result);
         setResult(null);
+        setBrightness(100);
+        setContrast(100);
+        setSharpness(100);
+        setShowEnhanceControls(false);
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const applyImageEnhancements = () => {
+    if (!originalImage) return;
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Apply brightness and contrast
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+      ctx.drawImage(img, 0, 0);
+
+      // Apply sharpness if needed
+      if (sharpness !== 100) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const sharpnessAmount = (sharpness - 100) / 100;
+        const sharpenedData = applySharpen(imageData, sharpnessAmount);
+        ctx.putImageData(sharpenedData, 0, 0);
+      }
+
+      setImage(canvas.toDataURL('image/jpeg', 0.95));
+    };
+    img.src = originalImage;
+  };
+
+  const applySharpen = (imageData, amount) => {
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const output = new ImageData(width, height);
+    
+    const kernel = [
+      0, -amount, 0,
+      -amount, 1 + 4 * amount, -amount,
+      0, -amount, 0
+    ];
+
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        for (let c = 0; c < 3; c++) {
+          let sum = 0;
+          for (let ky = -1; ky <= 1; ky++) {
+            for (let kx = -1; kx <= 1; kx++) {
+              const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+              const kernelIdx = (ky + 1) * 3 + (kx + 1);
+              sum += pixels[idx] * kernel[kernelIdx];
+            }
+          }
+          const outIdx = (y * width + x) * 4 + c;
+          output.data[outIdx] = Math.min(255, Math.max(0, sum));
+        }
+        const alphaIdx = (y * width + x) * 4 + 3;
+        output.data[alphaIdx] = 255;
+      }
+    }
+    return output;
+  };
+
+  const resetEnhancements = () => {
+    setBrightness(100);
+    setContrast(100);
+    setSharpness(100);
+    setImage(originalImage);
+  };
+
+  useEffect(() => {
+    if (originalImage && (brightness !== 100 || contrast !== 100 || sharpness !== 100)) {
+      const timeoutId = setTimeout(() => {
+        applyImageEnhancements();
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [brightness, contrast, sharpness]);
 
   const analyzeImage = async () => {
     if (!image) return;
@@ -368,6 +454,72 @@ Analyze for: handwritten signs, medical forms, emergency messages, injury descri
             {image && (
               <div className="mt-4">
                 <img src={image} alt="Uploaded" className="w-full rounded-lg shadow-md" />
+                
+                <button
+                  onClick={() => setShowEnhanceControls(!showEnhanceControls)}
+                  className="w-full mt-3 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                >
+                  <Sliders className="w-4 h-4" />
+                  {showEnhanceControls ? 'Hide' : 'Enhance Image'}
+                </button>
+
+                {showEnhanceControls && (
+                  <div className="mt-3 p-4 bg-gray-50 rounded-lg space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <label className="font-medium text-gray-700">Brightness</label>
+                        <span className="text-gray-600">{brightness}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="150"
+                        value={brightness}
+                        onChange={(e) => setBrightness(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <label className="font-medium text-gray-700">Contrast</label>
+                        <span className="text-gray-600">{contrast}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="150"
+                        value={contrast}
+                        onChange={(e) => setContrast(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <label className="font-medium text-gray-700">Sharpness</label>
+                        <span className="text-gray-600">{sharpness}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="150"
+                        value={sharpness}
+                        onChange={(e) => setSharpness(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <button
+                      onClick={resetEnhancements}
+                      className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Reset to Original
+                    </button>
+                  </div>
+                )}
+                
                 <button
                   onClick={analyzeImage}
                   disabled={loading}
